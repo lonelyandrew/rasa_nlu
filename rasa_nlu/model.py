@@ -121,7 +121,7 @@ class Trainer(object):
     the training."""
 
     # Officially supported languages (others might be used, but might fail)
-    SUPPORTED_LANGUAGES = ["de", "en"]
+    SUPPORTED_LANGUAGES = ["de", "en", "zh"]
 
     def __init__(self,
                  cfg,  # type: RasaNLUModelConfig
