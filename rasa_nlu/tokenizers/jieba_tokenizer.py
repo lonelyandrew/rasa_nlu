@@ -1,130 +1,114 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+#!/usr/bin/env python3
+
+'''Jieba Tokenizer.
+'''
 
 import glob
 import logging
 import os
 import shutil
+from typing import Any, Dict, List, Optional
+
+import jieba
 
 from rasa_nlu.components import Component
 from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.tokenizers import Tokenizer, Token
-from rasa_nlu.training_data import Message, TrainingData
-from typing import Any, List, Text
+from rasa_nlu.model import Message, Metadata
+from rasa_nlu.tokenizers import Token, Tokenizer
+from rasa_nlu.training_data import TrainingData
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
-JIEBA_CUSTOM_DICTIONARY_PATH = "tokenizer_jieba"
+JIEBA_USER_DICTIONARY_DIR = 'tokenizer_jieba'
 
 
 class JiebaTokenizer(Tokenizer, Component):
-    name = "tokenizer_jieba"
+    '''Jieba Tokenizer.
+    '''
+    name: str = 'tokenizer_jieba'
 
-    provides = ["tokens"]
+    provides: List[str] = ['tokens']
 
-    language_list = ["zh"]
+    language_list: List[str] = ['zh']
 
-    defaults = {
-        "dictionary_path": None  # default don't load custom dictionary
+    defaults: Dict[str, Any] = {
+        'user_dict_dir': None  # default don't load user dictionary
     }
 
-    def __init__(self, component_config=None):
-        # type: (Dict[Text, Any]) -> None
-        """Construct a new intent classifier using the MITIE framework."""
-
+    def __init__(self, component_config: Dict[str, Any]=None) -> None:
         super(JiebaTokenizer, self).__init__(component_config)
-
-        # path to dictionary file or None
-        self.dictionary_path = self.component_config.get('dictionary_path')
+        user_dict_dir = self.component_config.get('user_dict_dir')
+        self.user_dict_dir: Optional[str] = user_dict_dir
 
     @classmethod
-    def required_packages(cls):
-        # type: () -> List[Text]
-        return ["jieba"]
+    def required_packages(cls) -> List[str]:
+        return ['jieba']
 
     @staticmethod
-    def load_custom_dictionary(path):
-        # type: (Text) -> None
-        """Load all the custom dictionaries stored in the path.
+    def load_user_dictionary(user_dict_dir: str) -> None:
+        '''Load the dictionaries for the Jieba tokenizer.
 
-        More information about the dictionaries file format can
-        be found in the documentation of jieba.
-        https://github.com/fxsjy/jieba#load-dictionary
-        """
-        import jieba
+        Args:
+            user_dict_dir: The dir of the user dicts.
+        '''
+        user_dict_path_list = glob.glob(f'{user_dict_dir}/*')
+        for user_dict_path in user_dict_path_list:
+            LOGGER.info(f'Loading Jieba User Dictionary at {user_dict_path}.')
+            jieba.load_userdict(user_dict_path)
 
-        jieba_userdicts = glob.glob("{}/*".format(path))
-        for jieba_userdict in jieba_userdicts:
-            logger.info("Loading Jieba User Dictionary at "
-                        "{}".format(jieba_userdict))
-            jieba.load_userdict(jieba_userdict)
-
-    def train(self, training_data, config, **kwargs):
-        # type: (TrainingData, RasaNLUModelConfig, **Any) -> None
+    def train(self, training_data: TrainingData, cfg: RasaNLUModelConfig,
+              **kwargs: Any) -> None:
         for example in training_data.training_examples:
-            example.set("tokens", self.tokenize(example.text))
+            example.set('tokens', self.tokenize(example.text))
 
-    def process(self, message, **kwargs):
-        # type: (Message, **Any) -> None
-        message.set("tokens", self.tokenize(message.text))
+    def process(self, message: Message, **kwargs: Any) -> None:
+        tokens = self.tokenize(message.text)
+        message.set('tokens', tokens)
+        tokenized_token_text_list = [token.text for token in tokens]
+        message.set('tokenized_text', '-'.join(tokenized_token_text_list),
+                    add_to_output=True)
 
-    def tokenize(self, text):
-        # type: (Text) -> List[Token]
-        import jieba
-
-        if self.dictionary_path is not None:
-            self.load_custom_dictionary(self.dictionary_path)
-
+    def tokenize(self, text: str) -> List[Token]:
+        '''Tokenize the sentence.
+        '''
+        if self.user_dict_dir is not None:
+            self.load_user_dictionary(self.user_dict_dir)
         tokenized = jieba.tokenize(text)
         tokens = [Token(word, start) for (word, start, end) in tokenized]
         return tokens
 
     @classmethod
-    def load(cls,
-             model_dir=None,  # type: Optional[Text]
-             model_metadata=None,  # type: Optional[Metadata]
-             cached_component=None,  # type: Optional[Component]
-             **kwargs  # type: **Any
-             ):
-        # type: (...) -> JiebaTokenizer
-
-        meta = model_metadata.for_component(cls.name)
-        relative_dictionary_path = meta.get("dictionary_path")
-
-        # get real path of dictionary path, if any
-        if relative_dictionary_path is not None:
-            dictionary_path = os.path.join(model_dir, relative_dictionary_path)
-
-            meta["dictionary_path"] = dictionary_path
-
+    def load(cls, model_dir: str, model_metadata: Optional[Metadata]=None,
+             cached_component: Optional['JiebaTokenizer']=None,
+             **kwargs: Any) -> 'JiebaTokenizer':
+        if model_metadata is not None:
+            meta = model_metadata.for_component(cls.name)
+            relative_user_dict_dir = meta.get('user_dict_dir')
+            if relative_user_dict_dir is not None:
+                dictionary_path = os.path.join(model_dir,
+                                               relative_user_dict_dir)
+                meta['user_dict_dir'] = dictionary_path
+        else:
+            meta = {'user_dict_dir': None}
         return cls(meta)
 
     @staticmethod
-    def copy_files_dir_to_dir(input_dir, output_dir):
-        # make sure target path exists
+    def copy_files_dir_to_dir(input_dir: str, output_dir: str) -> None:
+        '''Copy files from one dir to another.
+        '''
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        target_file_list = glob.glob("{}/*".format(input_dir))
+        target_file_list = glob.glob(f'{input_dir}/*')
         for target_file in target_file_list:
             shutil.copy2(target_file, output_dir)
 
-    def persist(self, model_dir):
-        # type: (Text) -> Optional[Dict[Text, Any]]
-        """Persist this model into the passed directory."""
+    def persist(self, model_dir: str) -> Dict[str, Any]:
+        model_dict_dir = None
 
-        model_dictionary_path = None
-
-        # copy custom dictionaries to model dir, if any
-        if self.dictionary_path is not None:
-            target_dictionary_path = os.path.join(model_dir,
-                                                  JIEBA_CUSTOM_DICTIONARY_PATH)
-            self.copy_files_dir_to_dir(self.dictionary_path,
-                                       target_dictionary_path)
-
-            # set dictionary_path of model metadata to relative path
-            model_dictionary_path = JIEBA_CUSTOM_DICTIONARY_PATH
-
-        return {"dictionary_path": model_dictionary_path}
+        if self.user_dict_dir is not None:
+            target_dict_dir = os.path.join(model_dir,
+                                           JIEBA_USER_DICTIONARY_DIR)
+            self.copy_files_dir_to_dir(self.user_dict_dir, target_dict_dir)
+            model_dict_dir = JIEBA_USER_DICTIONARY_DIR
+        return {'user_dict_dir': model_dict_dir}
