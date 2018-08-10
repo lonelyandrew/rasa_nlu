@@ -1,13 +1,11 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import json
 import logging
+from builtins import input
 
 import six
-from builtins import input
 
 from rasa_nlu import utils
 from rasa_nlu.model import Interpreter

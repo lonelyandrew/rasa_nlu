@@ -1,22 +1,14 @@
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from builtins import str
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import re
+from builtins import str
+from typing import Any, Dict, List, Text, Tuple
 
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Text
-from typing import Tuple
-
-from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.tokenizers import Token
-from rasa_nlu.tokenizers import Tokenizer
 from rasa_nlu.components import Component
-from rasa_nlu.training_data import Message
-from rasa_nlu.training_data import TrainingData
+from rasa_nlu.config import RasaNLUModelConfig
+from rasa_nlu.tokenizers import Token, Tokenizer
+from rasa_nlu.training_data import Message, TrainingData
 
 
 class MitieTokenizer(Tokenizer, Component):

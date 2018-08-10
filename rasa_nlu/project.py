@@ -1,23 +1,18 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import datetime
 import glob
-
-import os
 import logging
-
+import os
 from builtins import object
 from threading import Lock
+from typing import List, Text
 
 from rasa_nlu import utils
-from typing import Text, List
-
 from rasa_nlu.classifiers.keyword_intent_classifier import \
     KeywordIntentClassifier
-from rasa_nlu.model import Metadata, Interpreter
+from rasa_nlu.model import Interpreter, Metadata
 
 logger = logging.getLogger(__name__)
 

@@ -1,13 +1,8 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import typing
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Text
+from typing import Any, Dict, List, Text
 
 from rasa_nlu.extractors import EntityExtractor
 from rasa_nlu.training_data import Message

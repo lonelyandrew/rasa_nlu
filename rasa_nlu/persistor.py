@@ -1,18 +1,16 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import io
 import logging
 import os
 import shutil
 import tarfile
+from builtins import object
+from typing import List, Optional, Text, Tuple
 
 import boto3
 import botocore
-from builtins import object
-from typing import Optional, Tuple, List, Text
 
 from rasa_nlu.config import RasaNLUModelConfig
 

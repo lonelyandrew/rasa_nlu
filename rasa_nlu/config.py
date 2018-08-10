@@ -1,17 +1,15 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import copy
 import logging
 import os
+from builtins import object
+# Describes where to search for the config file if no location is specified
+from typing import Any, Dict, List, Optional, Text
 
 import six
 import yaml
-from builtins import object
-# Describes where to search for the config file if no location is specified
-from typing import Text, Optional, Dict, Any, List
 
 from rasa_nlu import utils
 from rasa_nlu.utils import json_to_string

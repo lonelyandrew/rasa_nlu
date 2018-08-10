@@ -1,32 +1,30 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
+import datetime
 import glob
 import io
 import logging
-import tempfile
-
-import datetime
 import os
+import tempfile
 from builtins import object
 from concurrent.futures import ProcessPoolExecutor as ProcessPool
-from future.utils import PY3
-from rasa_nlu.training_data import Message
+from typing import Any, Dict, List, Optional, Text
 
-from rasa_nlu import utils, config
+from future.utils import PY3
+from twisted.internet import reactor
+from twisted.internet.defer import Deferred
+from twisted.logger import Logger, jsonFileLogObserver
+
+from rasa_nlu import config, utils
 from rasa_nlu.components import ComponentBuilder
 from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.evaluate import get_evaluation_metrics, clean_intent_labels
+from rasa_nlu.evaluate import clean_intent_labels, get_evaluation_metrics
 from rasa_nlu.model import InvalidProjectError
 from rasa_nlu.project import Project
 from rasa_nlu.train import do_train_in_worker
+from rasa_nlu.training_data import Message
 from rasa_nlu.training_data.loading import load_data
-from twisted.internet import reactor
-from twisted.internet.defer import Deferred
-from twisted.logger import jsonFileLogObserver, Logger
-from typing import Text, Dict, Any, Optional, List
 
 logger = logging.getLogger(__name__)
 

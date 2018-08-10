@@ -1,23 +1,21 @@
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-import logging
-import typing
-import os
 import io
+import logging
+import os
 import re
-from future.utils import PY3
+import typing
 from typing import Any, Dict, List, Optional, Text
 
+from future.utils import PY3
+
 from rasa_nlu import utils
-from rasa_nlu.featurizers import Featurizer
-from rasa_nlu.training_data import Message
-from rasa_nlu.training_data import TrainingData
 from rasa_nlu.components import Component
 from rasa_nlu.config import RasaNLUModelConfig
+from rasa_nlu.featurizers import Featurizer
 from rasa_nlu.model import Metadata
+from rasa_nlu.training_data import Message, TrainingData
 
 logger = logging.getLogger(__name__)
 

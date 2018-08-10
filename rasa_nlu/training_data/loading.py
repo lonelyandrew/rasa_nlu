@@ -1,23 +1,23 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import json
 import logging
+from typing import Optional, Text
 
 import requests
-from typing import Text, Optional
 
 from rasa_nlu import utils
 from rasa_nlu.training_data import TrainingData
-from rasa_nlu.training_data.formats import (
-    MarkdownReader, WitReader, LuisReader,
-    RasaReader, DialogflowReader)
-from rasa_nlu.training_data.formats import markdown
-from rasa_nlu.training_data.formats.dialogflow import (
-    DIALOGFLOW_AGENT, DIALOGFLOW_PACKAGE, DIALOGFLOW_INTENT,
-    DIALOGFLOW_ENTITIES, DIALOGFLOW_ENTITY_ENTRIES, DIALOGFLOW_INTENT_EXAMPLES)
+from rasa_nlu.training_data.formats import (DialogflowReader, LuisReader,
+                                            MarkdownReader, RasaReader,
+                                            WitReader, markdown)
+from rasa_nlu.training_data.formats.dialogflow import (DIALOGFLOW_AGENT,
+                                                       DIALOGFLOW_ENTITIES,
+                                                       DIALOGFLOW_ENTITY_ENTRIES,
+                                                       DIALOGFLOW_INTENT,
+                                                       DIALOGFLOW_INTENT_EXAMPLES,
+                                                       DIALOGFLOW_PACKAGE)
 
 logger = logging.getLogger(__name__)
 

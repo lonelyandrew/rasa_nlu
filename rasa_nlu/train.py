@@ -1,21 +1,15 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import argparse
 import logging
-
 import typing
-from typing import Optional, Any
-from typing import Text
-from typing import Tuple
+from typing import Any, Optional, Text, Tuple
 
-from rasa_nlu import utils, config
+from rasa_nlu import config, utils
 from rasa_nlu.components import ComponentBuilder
 from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.model import Interpreter
-from rasa_nlu.model import Trainer
+from rasa_nlu.model import Interpreter, Trainer
 from rasa_nlu.training_data import load_data
 from rasa_nlu.training_data.loading import load_data_from_url
 

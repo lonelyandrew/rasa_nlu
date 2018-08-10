@@ -1,20 +1,10 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import logging
-
 import typing
 from builtins import object
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from typing import Text
-from typing import Tuple
-from typing import Hashable
+from typing import Any, Dict, Hashable, List, Optional, Set, Text, Tuple
 
 from rasa_nlu import config
 from rasa_nlu.config import RasaNLUModelConfig

@@ -1,20 +1,16 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import logging
 import os
-
 import typing
 from builtins import str
 from typing import Any, Dict, List, Optional, Text, Tuple
 
-from rasa_nlu.config import RasaNLUModelConfig, InvalidConfigError
+from rasa_nlu.config import InvalidConfigError, RasaNLUModelConfig
 from rasa_nlu.extractors import EntityExtractor
 from rasa_nlu.model import Metadata
-from rasa_nlu.training_data import Message
-from rasa_nlu.training_data import TrainingData
+from rasa_nlu.training_data import Message, TrainingData
 
 try:
     import spacy

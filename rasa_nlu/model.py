@@ -1,26 +1,19 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import copy
 import datetime
 import logging
 import os
-
 from builtins import object
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Text
+from typing import Any, Dict, List, Optional, Text
 
 import rasa_nlu
-from rasa_nlu import components, utils, config
+from rasa_nlu import components, config, utils
 from rasa_nlu.components import Component, ComponentBuilder
 from rasa_nlu.config import RasaNLUModelConfig, override_defaults
 from rasa_nlu.persistor import Persistor
-from rasa_nlu.training_data import TrainingData, Message
+from rasa_nlu.training_data import Message, TrainingData
 from rasa_nlu.utils import create_dir, write_json_to_file
 
 logger = logging.getLogger(__name__)

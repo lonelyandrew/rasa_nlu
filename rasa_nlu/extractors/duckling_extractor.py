@@ -1,17 +1,11 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import datetime
 import logging
-from inspect import getmembers
-
 import typing
-from typing import Any, Dict
-from typing import List
-from typing import Optional
-from typing import Text
+from inspect import getmembers
+from typing import Any, Dict, List, Optional, Text
 
 from rasa_nlu.config import RasaNLUModelConfig
 from rasa_nlu.extractors import EntityExtractor

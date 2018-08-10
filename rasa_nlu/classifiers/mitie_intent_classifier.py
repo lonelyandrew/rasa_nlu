@@ -1,22 +1,14 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import os
-
 import typing
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Text
+from typing import Any, Dict, List, Optional, Text
 
 from rasa_nlu.components import Component
 from rasa_nlu.config import RasaNLUModelConfig
 from rasa_nlu.model import Metadata
-from rasa_nlu.training_data import Message
-from rasa_nlu.training_data import TrainingData
+from rasa_nlu.training_data import Message, TrainingData
 
 if typing.TYPE_CHECKING:
     import mitie

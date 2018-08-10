@@ -1,28 +1,25 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import argparse
 import logging
+from builtins import str
 from functools import wraps
 
 import simplejson
 import six
-from builtins import str
 from klein import Klein
 from twisted.internet import reactor, threads
 from twisted.internet.defer import inlineCallbacks, returnValue
 
-from rasa_nlu import utils, config
+from rasa_nlu import config, utils
 from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.data_router import (
-    DataRouter, InvalidProjectError,
-    MaxTrainingError)
+from rasa_nlu.data_router import (DataRouter, InvalidProjectError,
+                                  MaxTrainingError)
+from rasa_nlu.model import MINIMUM_COMPATIBLE_VERSION
 from rasa_nlu.train import TrainingException
 from rasa_nlu.utils import json_to_string
 from rasa_nlu.version import __version__
-from rasa_nlu.model import MINIMUM_COMPATIBLE_VERSION
 
 logger = logging.getLogger(__name__)
 

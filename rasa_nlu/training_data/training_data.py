@@ -1,29 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import logging
 import os
 import warnings
-
-from copy import deepcopy
 from builtins import object, str
-from rasa_nlu.training_data import Message
-
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Text
-
 from collections import Counter
+from copy import deepcopy
+from typing import Any, Dict, List, Optional, Text
 
-from rasa_nlu.utils import lazyproperty, write_to_file
-from rasa_nlu.utils import list_to_str
+from rasa_nlu.training_data import Message
 from rasa_nlu.training_data.util import check_duplicate_synonym
+from rasa_nlu.utils import lazyproperty, list_to_str, write_to_file
 
 logger = logging.getLogger(__name__)
 

@@ -1,16 +1,13 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import re
 from typing import Any, List, Text
 
 from rasa_nlu.components import Component
 from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.tokenizers import Tokenizer, Token
-from rasa_nlu.training_data import Message
-from rasa_nlu.training_data import TrainingData
+from rasa_nlu.tokenizers import Token, Tokenizer
+from rasa_nlu.training_data import Message, TrainingData
 
 
 class WhitespaceTokenizer(Tokenizer, Component):

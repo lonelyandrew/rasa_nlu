@@ -1,15 +1,12 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import logging
 from collections import defaultdict
 
 from rasa_nlu.training_data import Message, TrainingData
-from rasa_nlu.training_data.formats.readerwriter import (
-    JsonTrainingDataReader,
-    TrainingDataWriter)
+from rasa_nlu.training_data.formats.readerwriter import (JsonTrainingDataReader,
+                                                         TrainingDataWriter)
 from rasa_nlu.training_data.util import transform_entity_synonyms
 from rasa_nlu.utils import json_to_string
 

@@ -1,22 +1,18 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import io
 import itertools
+import json
 import logging
 import shutil
-from collections import defaultdict
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 
 import numpy as np
-import json
 
-from rasa_nlu import training_data, utils, config
+from rasa_nlu import config, training_data, utils
 from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.model import Interpreter
-from rasa_nlu.model import Trainer, TrainingData
+from rasa_nlu.model import Interpreter, Trainer, TrainingData
 
 logger = logging.getLogger(__name__)
 

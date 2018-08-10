@@ -1,1 +1,5 @@
 -r alt_requirements/requirements_listen_robot.txt
+
+mypy
+pylint
+isort
