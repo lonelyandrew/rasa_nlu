@@ -1,0 +1,7 @@
+language: "zh"
+
+pipeline:
+- name: "embedding_loader_word2vec"
+  file_path: "~/Data/sgns.merge.word"
+  binary: "false"
+  domain: "general"

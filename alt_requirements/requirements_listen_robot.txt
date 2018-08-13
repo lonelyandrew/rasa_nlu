@@ -17,3 +17,6 @@ packaging==17.1
 pyyaml==3.12
 coloredlogs==9.0
 jieba
+gensim
+tensorflow-gpu
+keras
