@@ -12,6 +12,8 @@ from rasa_nlu.components import Component
 from rasa_nlu.config import RasaNLUModelConfig
 from rasa_nlu.model import Metadata
 
+from rasa_nlu.tokenizers import Token
+
 LOGGER = logging.getLogger(__name__)
 
 class EmbeddingDomain(Enum):
@@ -28,13 +30,13 @@ class Word2vecEmbeddingLoader(Component):
 
     provides: List[str] = ['lookup_table']
 
-    defaults: Dict[str, Any] = {'binary': True}
+    defaults: Dict[str, Any] = {'binary': 'false'}
 
     def __init__(self, component_config: Dict[str, Any],
                  lookup_table: KeyedVectors, domain: EmbeddingDomain) -> None:
         super(Word2vecEmbeddingLoader, self).__init__(component_config)
         self.lookup_table = lookup_table
-        self.domain = domain
+        self.domain: EmbeddingDomain = domain
 
     @classmethod
     def required_packages(cls) -> List[str]:
@@ -86,6 +88,20 @@ class Word2vecEmbeddingLoader(Component):
             domain_str = component_config['domain']
             domain = EmbeddingDomain[domain_str]
         return cls(component_config, lookup_table, domain)
+
+    def train(self, training_data: TrainingData, cfg: RasaNLUModelConfig,
+              **kwargs: Any) -> None:
+        for example in training_data.training_examples:
+            tokens = example.get('tokens')
+            example.set('token_ix_seq', self.sentence2ix_seq(tokens))
+
+    def process(self, message: Message, **kwargs: Any) -> None:
+        tokens = message.get('tokens')
+        message.set('token_ix_seq', self.sentence2ix_seq(tokens))
+
+    def sentence2ix_seq(self, tokens: List[Token]) -> List[int]:
+        vocab = self.lookup_table.vocab
+        return [vocab[t.text].index for t in tokens]
 
 
 if __name__ == '__main__':

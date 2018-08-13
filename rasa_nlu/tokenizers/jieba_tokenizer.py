@@ -65,8 +65,8 @@ class JiebaTokenizer(Tokenizer, Component):
         tokens = self.tokenize(message.text)
         message.set('tokens', tokens)
         tokenized_token_text_list = [token.text for token in tokens]
-        message.set('tokenized_text', '-'.join(tokenized_token_text_list),
-                    add_to_output=True)
+        # message.set('tokenized_text', '-'.join(tokenized_token_text_list),
+        #             add_to_output=True)
 
     def tokenize(self, text: str) -> List[Token]:
         '''Tokenize the sentence.

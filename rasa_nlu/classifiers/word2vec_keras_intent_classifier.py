@@ -29,7 +29,7 @@ class Word2vecKerasIntentClassifier(Component):
         return ['keras']
 
     def train(self, training_data :TrainingData, cfg: RasaNLUModelConfig,
-              **kwargs: Dict[str, Any]) -> None:
+              **kwargs: Any) -> None:
         lookup_table = kwargs['lookup_table']
 
 
