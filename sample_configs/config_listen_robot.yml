@@ -5,3 +5,6 @@ pipeline:
   file_path: "~/Data/sgns.merge.word"
   binary: "false"
   domain: "general"
+- name: "tokenizer_jieba"
+- name: "intent_classifier_word2vec_keras"
+  clf_config_file_path: "/home/shixiufeng/Code/Github/rasa_nlu/clf_config/word2vec_keras_config.json"

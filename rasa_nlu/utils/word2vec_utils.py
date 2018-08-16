@@ -2,17 +2,20 @@
 '''Load the Word2vec pretrained embedding.
 '''
 
+import logging
 import os
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
+import numpy as np
 from gensim.models.keyedvectors import KeyedVectors
+from numpy import ndarray
 
 from rasa_nlu.components import Component
 from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.model import Metadata
-
+from rasa_nlu.model import Message, Metadata
 from rasa_nlu.tokenizers import Token
+from rasa_nlu.training_data import TrainingData
 
 LOGGER = logging.getLogger(__name__)
 
@@ -63,7 +66,19 @@ class Word2vecEmbeddingLoader(Component):
         return cls.name + file_path
 
     def provide_context(self) -> Dict[str, Any]:
-        return {'lookup_table': self.lookup_table}
+        return {'lookup_table': self.generate_emb_matrix()}
+
+    def generate_emb_matrix(self) -> ndarray:
+        '''Generate a numpy matrix from the lookup table.
+        '''
+        vector_size: int = self.lookup_table.vector_size
+        vocab_len: int = len(self.lookup_table.vocab)
+        lookup_table_matrix = np.zeros((vocab_len, vector_size))
+        for key, key_vocab in self.lookup_table.vocab.items():
+            vec = self.lookup_table[key]
+            lookup_table_matrix[key_vocab.index] = vec
+        return lookup_table_matrix
+
 
     def persist(self, model_dir: str) -> Dict[str, Any]:
         lookup_table_path = os.path.join(model_dir, 'word2vec.bin')
@@ -100,8 +115,10 @@ class Word2vecEmbeddingLoader(Component):
         message.set('token_ix_seq', self.sentence2ix_seq(tokens))
 
     def sentence2ix_seq(self, tokens: List[Token]) -> List[int]:
+        '''Convert sentence to a sequence of token indices.
+        '''
         vocab = self.lookup_table.vocab
-        return [vocab[t.text].index for t in tokens]
+        return [vocab[t.text].index+1 for t in tokens]
 
 
 if __name__ == '__main__':
