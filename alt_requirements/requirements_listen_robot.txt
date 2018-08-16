@@ -20,3 +20,4 @@ jieba
 gensim
 tensorflow-gpu
 keras
+progressbar2

@@ -8,6 +8,7 @@ import os
 import logging
 import random
 from typing import Any, Dict, Generator, List, Optional, Tuple
+from math import ceil
 
 import numpy as np
 from numpy import ndarray
@@ -16,6 +17,7 @@ from keras.layers import LSTM, Bidirectional, Dense, Embedding, Input, Masking
 from keras.models import Model, load_model
 from keras.utils.np_utils import to_categorical
 from tensorflow import Tensor
+import progressbar
 
 from rasa_nlu.components import Component
 from rasa_nlu.config import RasaNLUModelConfig
@@ -51,8 +53,9 @@ class Word2vecKerasIntentClassifier(Component):
               **kwargs: Any) -> None:
         if self.clf is None:
             lookup_table: ndarray = kwargs['lookup_table']
-            self.labels: List[str] = [e.get("intent")
-                                      for e in training_data.intent_examples]
+            labels: List[str] = [e.get("intent")
+                                 for e in training_data.intent_examples]
+            self.labels: List[str] = list(set(labels))
             nlabels = len(set(self.labels))
             if nlabels < 2:
                 raise ValueError('At lease two kinds of labels.')
@@ -60,9 +63,17 @@ class Word2vecKerasIntentClassifier(Component):
                 self.clf_config.update({'nlabels': nlabels})
             clf: Model = self.build_clf(lookup_table)
         # TODO: add epocs
-        for batch_x, batch_y in self.generate_batch(
-                training_data.intent_examples):
-            clf.train_on_batch(batch_x, batch_y)
+        batch_size = self.clf_config['batch_size']
+        nbatches = ceil(len(training_data.intent_examples) / batch_size)
+        with progressbar.ProgressBar(max_value=nbatches,
+                                     redirect_stdout=True) as bar:
+            batch_ix = 1
+            for batch_x, batch_y in self.generate_batch(
+                    training_data.intent_examples):
+                loss = clf.train_on_batch(batch_x, batch_y)
+                print(loss)
+                bar.update(batch_ix)
+                batch_ix += 1
 
     def process(self, message: Message, **kwargs: Any):
 
@@ -84,13 +95,14 @@ class Word2vecKerasIntentClassifier(Component):
         y_list: List[int] = []
         if shuffle:
             random.shuffle(examples)
+        nlabels = self.clf_config['nlabels']
         for example in examples:
             token_ix_seq: List[int] = example.get('token_ix_seq')
             unbatch_list.append(token_ix_seq)
             y_list.append(self.labels.index(example.get('intent')))
             if len(unbatch_list) == batch_size:
                 batch_list: ndarray = self.pad_batch_list(unbatch_list)
-                y_array: ndarray = to_categorical(y_list)
+                y_array: ndarray = to_categorical(y_list, num_classes=nlabels)
                 unbatch_list = []
                 y_list = []
                 yield batch_list, y_array
@@ -100,8 +112,8 @@ class Word2vecKerasIntentClassifier(Component):
         '''Pad sequences to a fixed length.
         '''
         batch_list: List[List[int]] = []
-        max_len: int = len(max(batch_list, key=len))
-        for seq in batch_list:
+        max_len: int = len(max(unbatch_list, key=len))
+        for seq in unbatch_list:
             pad_len: int = max_len - len(seq)
             batch_list.append(seq + [0] * pad_len)
         return np.array(batch_list)
