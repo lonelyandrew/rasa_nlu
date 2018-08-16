@@ -1,10 +1,10 @@
 language: "zh"
 
 pipeline:
+- name: "tokenizer_jieba"
 - name: "embedding_loader_word2vec"
-  file_path: "~/Data/sgns.merge.word"
+  file_path: "~/Data/sgns.wiki.word"
   binary: "false"
   domain: "general"
-- name: "tokenizer_jieba"
 - name: "intent_classifier_word2vec_keras"
   clf_config_file_path: "/home/shixiufeng/Code/Github/rasa_nlu/clf_config/word2vec_keras_config.json"

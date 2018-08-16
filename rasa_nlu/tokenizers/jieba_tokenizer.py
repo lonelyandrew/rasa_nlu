@@ -37,7 +37,7 @@ class JiebaTokenizer(Tokenizer, Component):
 
     def __init__(self, component_config: Dict[str, Any]=None) -> None:
         super(JiebaTokenizer, self).__init__(component_config)
-        user_dict_dir = self.component_config.get('user_dict_dir')
+        user_dict_dir: str = self.component_config.get('user_dict_dir')
         self.user_dict_dir: Optional[str] = user_dict_dir
 
     @classmethod
@@ -51,7 +51,7 @@ class JiebaTokenizer(Tokenizer, Component):
         Args:
             user_dict_dir: The dir of the user dicts.
         '''
-        user_dict_path_list = glob.glob(f'{user_dict_dir}/*')
+        user_dict_path_list: List[str] = glob.glob(f'{user_dict_dir}/*')
         for user_dict_path in user_dict_path_list:
             LOGGER.info(f'Loading Jieba User Dictionary at {user_dict_path}.')
             jieba.load_userdict(user_dict_path)
@@ -64,7 +64,7 @@ class JiebaTokenizer(Tokenizer, Component):
     def process(self, message: Message, **kwargs: Any) -> None:
         tokens = self.tokenize(message.text)
         message.set('tokens', tokens)
-        tokenized_token_text_list = [token.text for token in tokens]
+        # tokenized_token_text_list = [token.text for token in tokens]
         # message.set('tokenized_text', '-'.join(tokenized_token_text_list),
         #             add_to_output=True)
 

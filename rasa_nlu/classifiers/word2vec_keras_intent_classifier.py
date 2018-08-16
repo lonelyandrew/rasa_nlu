@@ -34,7 +34,7 @@ class Word2vecKerasIntentClassifier(Component):
 
     provides: List[str] = ['intent']
 
-    requires: List[str] = ['token', 'lookup_table']
+    requires: List[str] = ['tokens', 'lookup_table']
 
     def __init__(self, component_config: Dict[str, Any],
                  clf_config: Dict[str, Any],
@@ -53,8 +53,11 @@ class Word2vecKerasIntentClassifier(Component):
             lookup_table: ndarray = kwargs['lookup_table']
             self.labels: List[str] = [e.get("intent")
                                       for e in training_data.intent_examples]
-            if len(set(self.labels)) < 2:
+            nlabels = len(set(self.labels))
+            if nlabels < 2:
                 raise ValueError('At lease two kinds of labels.')
+            else:
+                self.clf_config.update({'nlabels': nlabels})
             clf: Model = self.build_clf(lookup_table)
         # TODO: add epocs
         for batch_x, batch_y in self.generate_batch(
@@ -124,7 +127,7 @@ class Word2vecKerasIntentClassifier(Component):
                                   name='dense')(bi_lstm_out)
         clf = Model(token_input, dense_out)
 
-        optimizer_config = {'class': self.clf_config['optimizer'],
+        optimizer_config = {'class_name': self.clf_config['optimizer'],
                             'config': {'lr': self.clf_config['lr']}}
         optimizer = optimizers.get(optimizer_config)
         clf.compile(optimizer=optimizer, loss=self.clf_config['loss'])

@@ -9,15 +9,18 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 from gensim.models.keyedvectors import KeyedVectors
+from gensim.models.keyedvectors import Vocab
 from numpy import ndarray
 
 from rasa_nlu.components import Component
 from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.model import Message, Metadata
+from rasa_nlu.model import Metadata
+from rasa_nlu.training_data import Message
 from rasa_nlu.tokenizers import Token
 from rasa_nlu.training_data import TrainingData
 
 LOGGER = logging.getLogger(__name__)
+
 
 class EmbeddingDomain(Enum):
     '''Embedding domains.
@@ -46,14 +49,18 @@ class Word2vecEmbeddingLoader(Component):
         return ['gensim']
 
     @classmethod
-    def create(cls, cfg:RasaNLUModelConfig) -> 'Word2vecEmbeddingLoader':
+    def create(cls, cfg: RasaNLUModelConfig) -> 'Word2vecEmbeddingLoader':
         component_config: Dict[str, Any] = cfg.for_component(cls.name,
                                                              cls.defaults)
         file_path: str = component_config['file_path']
         is_binary: str = component_config.get('binary', 'false').lower()
         binary: bool = (is_binary == 'true')
+        if __debug__:
+            limit: Optional[int] = 5000
+        else:
+            limit = None
         lookup_table: KeyedVectors = KeyedVectors.load_word2vec_format(
-            file_path, binary=binary)
+            file_path, binary=binary, limit=limit)
 
         domain_str: str = component_config['domain']
         domain: EmbeddingDomain = EmbeddingDomain[domain_str]
@@ -78,7 +85,6 @@ class Word2vecEmbeddingLoader(Component):
             vec = self.lookup_table[key]
             lookup_table_matrix[key_vocab.index] = vec
         return lookup_table_matrix
-
 
     def persist(self, model_dir: str) -> Dict[str, Any]:
         lookup_table_path = os.path.join(model_dir, 'word2vec.bin')
@@ -117,8 +123,15 @@ class Word2vecEmbeddingLoader(Component):
     def sentence2ix_seq(self, tokens: List[Token]) -> List[int]:
         '''Convert sentence to a sequence of token indices.
         '''
-        vocab = self.lookup_table.vocab
-        return [vocab[t.text].index+1 for t in tokens]
+        vocab: Dict[str, Vocab] = self.lookup_table.vocab
+        ix_seq: List[int] = []
+        # TODO: handle oov words
+        for token in tokens:
+            if token.text in vocab:
+                ix_seq.append(vocab[token.text].index+1)
+            else:
+                ix_seq.append(0)
+        return ix_seq
 
 
 if __name__ == '__main__':

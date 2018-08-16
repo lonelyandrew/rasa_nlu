@@ -17,6 +17,8 @@ from rasa_nlu.classifiers.keyword_intent_classifier import \
 from rasa_nlu.classifiers.mitie_intent_classifier import MitieIntentClassifier
 from rasa_nlu.classifiers.sklearn_intent_classifier import \
     SklearnIntentClassifier
+from rasa_nlu.classifiers.word2vec_keras_intent_classifier import \
+    Word2vecKerasIntentClassifier
 from rasa_nlu.extractors.crf_entity_extractor import CRFEntityExtractor
 from rasa_nlu.extractors.duckling_extractor import DucklingExtractor
 from rasa_nlu.extractors.duckling_http_extractor import DucklingHTTPExtractor
@@ -36,6 +38,7 @@ from rasa_nlu.tokenizers.spacy_tokenizer import SpacyTokenizer
 from rasa_nlu.tokenizers.whitespace_tokenizer import WhitespaceTokenizer
 from rasa_nlu.utils.mitie_utils import MitieNLP
 from rasa_nlu.utils.spacy_utils import SpacyNLP
+from rasa_nlu.utils.word2vec_utils import Word2vecEmbeddingLoader
 
 if typing.TYPE_CHECKING:
     from rasa_nlu.components import Component
@@ -52,7 +55,8 @@ component_classes = [
     CountVectorsFeaturizer,
     MitieTokenizer, SpacyTokenizer, WhitespaceTokenizer, JiebaTokenizer,
     SklearnIntentClassifier, MitieIntentClassifier, KeywordIntentClassifier,
-    EmbeddingIntentClassifier
+    EmbeddingIntentClassifier, Word2vecEmbeddingLoader,
+    Word2vecKerasIntentClassifier
 ]
 
 # Mapping from a components name to its class to allow name based lookup.
