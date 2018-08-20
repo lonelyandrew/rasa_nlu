@@ -41,7 +41,7 @@ class Word2vecEmbeddingLoader(Component):
     def __init__(self, component_config: Dict[str, Any],
                  lookup_table: KeyedVectors, domain: EmbeddingDomain) -> None:
         super(Word2vecEmbeddingLoader, self).__init__(component_config)
-        self.lookup_table = lookup_table
+        self.lookup_table: KeyedVectors = lookup_table
         self.domain: EmbeddingDomain = domain
 
     @classmethod
@@ -88,7 +88,7 @@ class Word2vecEmbeddingLoader(Component):
 
     def persist(self, model_dir: str) -> Dict[str, Any]:
         lookup_table_path = os.path.join(model_dir, 'word2vec.bin')
-        self.lookup_table.save(lookup_table_path, binary=True)
+        self.lookup_table.save_word2vec_format(lookup_table_path, binary=True)
         return {'lookup_table_path': lookup_table_path,
                 'domain': self.domain.name}
 
