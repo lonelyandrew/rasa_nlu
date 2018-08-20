@@ -6,6 +6,7 @@ import logging
 import os
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
+import json
 
 import numpy as np
 from gensim.models.keyedvectors import KeyedVectors
@@ -38,11 +39,21 @@ class Word2vecEmbeddingLoader(Component):
 
     defaults: Dict[str, Any] = {'binary': 'false'}
 
-    def __init__(self, component_config: Dict[str, Any],
-                 lookup_table: KeyedVectors, domain: EmbeddingDomain) -> None:
+    def __init__(self, *, component_config: Dict[str, Any],
+                 domain: EmbeddingDomain=EmbeddingDomain.general,
+                 lookup_table: Optional[KeyedVectors]=None,
+                 vocab: Optional[Dict[str, Vocab]]=None) -> None:
         super(Word2vecEmbeddingLoader, self).__init__(component_config)
         self.lookup_table: KeyedVectors = lookup_table
         self.domain: EmbeddingDomain = domain
+        if lookup_table is not None:
+            self.vocab: Dict[str, Vocab] = lookup_table.vocab
+        else:
+            if vocab is None:
+                raise ValueError('Please offser at least a vocabulary or'
+                                 'a lookup table.')
+            else:
+                self.vocab = vocab
 
     @classmethod
     def required_packages(cls) -> List[str]:
@@ -64,7 +75,8 @@ class Word2vecEmbeddingLoader(Component):
 
         domain_str: str = component_config['domain']
         domain: EmbeddingDomain = EmbeddingDomain[domain_str]
-        return cls(component_config, lookup_table, domain)
+        return cls(component_config=component_config, domain=domain,
+                   lookup_table=lookup_table)
 
     @classmethod
     def cache_key(cls, model_metadata: Metadata) -> str:
@@ -73,7 +85,10 @@ class Word2vecEmbeddingLoader(Component):
         return cls.name + file_path
 
     def provide_context(self) -> Dict[str, Any]:
-        return {'lookup_table': self.generate_emb_matrix()}
+        if self.lookup_table is not None:
+            return {'lookup_table': self.generate_emb_matrix()}
+        else:
+            return {}
 
     def generate_emb_matrix(self) -> ndarray:
         '''Generate a numpy matrix from the lookup table.
@@ -87,9 +102,12 @@ class Word2vecEmbeddingLoader(Component):
         return lookup_table_matrix
 
     def persist(self, model_dir: str) -> Dict[str, Any]:
-        lookup_table_path = os.path.join(model_dir, 'word2vec.bin')
-        self.lookup_table.save_word2vec_format(lookup_table_path, binary=True)
-        return {'lookup_table_path': lookup_table_path,
+        vocab_path = os.path.join(model_dir, 'vocab.json')
+        vocab_dict = self.vocab2dict(self.vocab)
+
+        with open(vocab_path, 'w+') as f:
+            json.dump(vocab_dict, f)
+        return {'vocab_path': vocab_path,
                 'domain': self.domain.name}
 
     @classmethod
@@ -103,12 +121,14 @@ class Word2vecEmbeddingLoader(Component):
             raise ValueError('No Metadata Loaded.')
         else:
             component_config = model_metadata.for_component(cls.name)
-            lookup_table_path = component_config['lookup_table_path']
-            lookup_table = KeyedVectors.load_word2vec_format(lookup_table_path,
-                                                             binary=True)
+            vocab_path = component_config['vocab_path']
+            with open(vocab_path) as f:
+                vocab_dict = json.load(f)
+                vocab: Dict[str, Vocab] = cls.dict2vocab(vocab_dict)
             domain_str = component_config['domain']
             domain = EmbeddingDomain[domain_str]
-        return cls(component_config, lookup_table, domain)
+        return cls(component_config=component_config, domain=domain,
+                   lookup_table=None, vocab=vocab)
 
     def train(self, training_data: TrainingData, cfg: RasaNLUModelConfig,
               **kwargs: Any) -> None:
@@ -120,15 +140,28 @@ class Word2vecEmbeddingLoader(Component):
         tokens = message.get('tokens')
         message.set('token_ix_seq', self.sentence2ix_seq(tokens))
 
+    @staticmethod
+    def vocab2dict(vocab: Dict[str, Vocab]) -> Dict[str, int]:
+        new_vocab = {}
+        for k, v in vocab.items():
+            new_vocab[k] = v.index
+        return new_vocab
+
+    @staticmethod
+    def dict2vocab(vocab_dict: Dict[str, int]) -> Dict[str, Vocab]:
+        vocab = {}
+        for k, v in vocab_dict.items():
+            vocab[k] = Vocab(index=v)
+        return vocab
+
     def sentence2ix_seq(self, tokens: List[Token]) -> List[int]:
         '''Convert sentence to a sequence of token indices.
         '''
-        vocab: Dict[str, Vocab] = self.lookup_table.vocab
         ix_seq: List[int] = []
         # TODO: handle oov words
         for token in tokens:
-            if token.text in vocab:
-                ix_seq.append(vocab[token.text].index+1)
+            if token.text in self.vocab:
+                ix_seq.append(self.vocab[token.text].index+1)
             else:
                 ix_seq.append(0)
         return ix_seq

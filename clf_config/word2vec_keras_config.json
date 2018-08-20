@@ -1,9 +1,9 @@
 {
   "clf_class": "rasa_nlu.classifiers.keras_model.word2vec_bi_lstm.Word2vecIntentClassifier",
-  "lr": 0.00001,
-  "batch_size": 3,
+  "lr": 0.0001,
+  "batch_size": 2,
   "hidden_size": 200,
   "loss": "categorical_crossentropy",
   "optimizer": "adam",
-  "nepoch": 20
+  "nepoch": 50
 }
