@@ -21,3 +21,4 @@ gensim
 tensorflow-gpu
 keras
 progressbar2
+scikit-learn[alldeps]

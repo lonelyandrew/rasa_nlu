@@ -5,5 +5,5 @@
   "hidden_size": 200,
   "loss": "categorical_crossentropy",
   "optimizer": "adam",
-  "nepoch": 50
+  "nepoch": 100
 }

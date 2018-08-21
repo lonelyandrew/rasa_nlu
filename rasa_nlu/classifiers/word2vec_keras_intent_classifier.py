@@ -101,6 +101,7 @@ class Word2vecKerasIntentClassifier(Component):
             clf: KerasBaseModel = clf_class(self.clf_config, lookup_table,
                                             nlabels)
             clf.compile()
+            self.clf = clf
         batch_size = self.clf_config['batch_size']
         nepoch = self.clf_config['nepoch']
         nbatches = ceil(len(training_data.intent_examples) / batch_size)
@@ -117,19 +118,22 @@ class Word2vecKerasIntentClassifier(Component):
                     batch_status.update_mapping(batch_ix=batch_ix+1)
                     bar.update(batch_ix+1)
                     batch_x, batch_y = x_y
-                    epoch_loss += clf.model.train_on_batch(batch_x, batch_y)
-                print(f'LOSS {epoch_ix}/{nepoch}: {epoch_loss:.4} ({epoch_loss-prev_epoch_loss:+.4})')  # noqa
+                    epoch_loss += self.clf.model.train_on_batch(batch_x,
+                                                                batch_y)
+                print(f'LOSS {epoch_ix+1}/{nepoch}: {epoch_loss:.4} ({epoch_loss-prev_epoch_loss:+.4})')  # noqa
                 prev_epoch_loss = epoch_loss
                 bar.update(0)
-        self.clf = clf
 
     def process(self, message: Message, **kwargs: Any):
-        intent: Optional[str] = None
+        intent_name: Optional[str] = None
+        intent_confidence: float = 0.0
         if self.clf is not None and self.labels is not None:
             input_x: ndarray = np.array([message.get('token_ix_seq')])
             pred = self.clf.model.predict(input_x)[0]
             intent_idx = pred.argmax()
-            intent = self.labels[intent_idx]
+            intent_name = self.labels[intent_idx]
+            intent_confidence = pred[intent_idx]
+        intent = {'name': intent_name, 'confidence': intent_confidence}
         message.set('intent', intent, add_to_output=True)
 
     def generate_batch(self, examples: List[Message],
