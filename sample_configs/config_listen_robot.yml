@@ -4,6 +4,7 @@ pipeline:
 - name: "tokenizer_jieba"
 - name: "embedding_loader_word2vec"
   file_path: "~/Data/sgns.wiki.word"
+  # file_path: "~/Data/sgns.merge.word"
   binary: "false"
   domain: "general"
 - name: "intent_classifier_word2vec_keras"

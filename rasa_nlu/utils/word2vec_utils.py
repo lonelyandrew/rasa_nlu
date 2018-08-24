@@ -5,7 +5,7 @@
 import logging
 import os
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 import json
 
 import numpy as np
@@ -46,6 +46,7 @@ class Word2vecEmbeddingLoader(Component):
         super(Word2vecEmbeddingLoader, self).__init__(component_config)
         self.lookup_table: KeyedVectors = lookup_table
         self.domain: EmbeddingDomain = domain
+        self.oov_set: Set[str] = set()
         if lookup_table is not None:
             self.vocab: Dict[str, Vocab] = lookup_table.vocab
         else:
@@ -68,6 +69,7 @@ class Word2vecEmbeddingLoader(Component):
         binary: bool = (is_binary == 'true')
         if __debug__:
             limit: Optional[int] = 5000
+            LOGGER.info(f'You are in DEBUG mode, load word embedding with limit count {limit}.')  # noqa
         else:
             limit = None
         lookup_table: KeyedVectors = KeyedVectors.load_word2vec_format(
@@ -135,6 +137,7 @@ class Word2vecEmbeddingLoader(Component):
         for example in training_data.training_examples:
             tokens = example.get('tokens')
             example.set('token_ix_seq', self.sentence2ix_seq(tokens))
+        LOGGER.info(self.oov_set)
 
     def process(self, message: Message, **kwargs: Any) -> None:
         tokens = message.get('tokens')
@@ -158,12 +161,31 @@ class Word2vecEmbeddingLoader(Component):
         '''Convert sentence to a sequence of token indices.
         '''
         ix_seq: List[int] = []
-        # TODO: handle oov words
+        token_seq: List[str] = []
+        sentence = '-'.join([t.text for t in tokens])
+        LOGGER.info('=' * 80)
+        LOGGER.info(f'Processing: ' + sentence)
         for token in tokens:
-            if token.text in self.vocab:
+            if not token.text:
+                continue
+            if token.text in self.oov_set:
+                continue
+            elif token.text in self.vocab:
                 ix_seq.append(self.vocab[token.text].index+1)
+                token_seq.append(token.text)
             else:
-                ix_seq.append(0)
+                LOGGER.info(f'NEW OOV TOKEN: "{token.text}"')
+                for char in token.text:
+                    if char in self.vocab:
+                        LOGGER.info(f'ADD CHAR: "{char}"')
+                        ix_seq.append(self.vocab[char].index+1)
+                        token_seq.append(char)
+                    else:
+                        self.oov_set.add(char)
+                        LOGGER.info(f'NEW OOV CHAR: "{char}"')
+        LOGGER.info('ACTUAL TOKEN: ' + '-'.join(token_seq))
+        if not ix_seq:
+            ix_seq = [0]
         return ix_seq
 
 

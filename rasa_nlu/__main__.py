@@ -3,6 +3,7 @@
 from typing import Dict, Any
 import logging
 import argparse
+from datetime import datetime
 
 from rasa_nlu.training_data import load_data, TrainingData
 from rasa_nlu.model import Trainer, Interpreter
@@ -14,9 +15,23 @@ from rasa_nlu.evaluate import run_evaluation, return_entity_results, \
 
 logger = logging.getLogger(__name__)
 
-parser = argparse.ArgumentParser(description='Test Rasa NLU.')
-parser.add_argument('--mode', default='parse', const='parse',
-                    choices=['train', 'parse', 'evaluate'], nargs='?')
+
+def argparse_config():
+    parser = argparse.ArgumentParser(description='Test Rasa NLU.')
+    parser.add_argument('--mode', default='parse', const='parse',
+                        choices=['train', 'parse', 'evaluate'], nargs='?')
+    parser.add_argument('--model', nargs='?', default='')
+    args = parser.parse_args()
+    return args
+
+
+def logging_config():
+    log_file_name = f'log/{args.mode}-{datetime.now()}.log'
+    log_format_str = '[%(asctime)s]-[%(name)s]-[%(levelname)s]-%(message)s'
+    logging.basicConfig(filename=log_file_name, level=logging.DEBUG,
+                        filemode='w+', format=log_format_str)
+    logging.getLogger().addHandler(logging.StreamHandler())
+    logging.getLogger("tensorflow").setLevel(logging.WARNING)
 
 
 def train(training_data_path: str, config_path: str, save_dir: str) -> str:
@@ -34,6 +49,7 @@ def parse(model_dir: str, text: str) -> Dict[str, Any]:
 
 def evaluate(model_dir: str, test_data_path: str, config_path: str=None,
              mode: str='evaluation', folds: int=5):
+    logger.info(f'MODEL DIR: {model_dir}')
     if mode == 'evaluation':
         run_evaluation(test_data_path, model_dir, errors_filename=None)
     elif mode == 'cross_validation':
@@ -54,12 +70,14 @@ def evaluate(model_dir: str, test_data_path: str, config_path: str=None,
 
 
 if __name__ == '__main__':
-    args = parser.parse_args()
-    logging.basicConfig(filename='rasa_nlu.log', level=logging.INFO,
-                        filemode='w+')
-    training_data_path = '/home/shixiufeng/Data/trainingdata.txt'
+    args = argparse_config()
+    logging_config()
+    debug_mode = 'debug' if __debug__ else 'product'
+    logger.info(f'MODE: {args.mode} ({debug_mode})')
+    training_data_path = '/home/shixiufeng/Data/corpus_intent/training_data.json'  # noqa
     config_path = 'sample_configs/config_listen_robot.yml'
     save_dir = './projects/default/'
+    test_data_path = '/home/shixiufeng/Data/corpus_intent/test_intent.json'
 
     if args.mode in ['train', 'parse']:
         model_dir = train(training_data_path, config_path, save_dir)
@@ -71,4 +89,4 @@ if __name__ == '__main__':
         logging.info(result)
 
     if args.mode == 'evaluate':
-        evaluate(None, training_data_path, config_path, 'cross_validation')
+        evaluate(args.model, test_data_path)

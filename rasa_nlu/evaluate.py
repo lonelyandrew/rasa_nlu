@@ -1,7 +1,6 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-import io
 import itertools
 import json
 import logging
@@ -11,7 +10,6 @@ from collections import defaultdict, namedtuple
 import numpy as np
 
 from rasa_nlu import config, training_data, utils
-from rasa_nlu.config import RasaNLUModelConfig
 from rasa_nlu.model import Interpreter, Trainer, TrainingData
 
 logger = logging.getLogger(__name__)
@@ -81,6 +79,8 @@ def plot_confusion_matrix(cm, classes,
     """Print and plot the confusion matrix for the intent classification.
 
     Normalization can be applied by setting `normalize=True`."""
+    import matplotlib
+    matplotlib.use("agg")
     import matplotlib.pyplot as plt
     from matplotlib.colors import LogNorm
 
@@ -123,6 +123,8 @@ def plot_histogram(hist_data,
     """Plot a histogram of the confidence distribution of the predictions.
 
     Saves the plot to a file."""
+    import matplotlib
+    matplotlib.use("agg")
     import matplotlib.pyplot as plt
 
     plt.xlim([0, 1])
@@ -228,6 +230,8 @@ def collect_nlu_errors(intent_results):  # pragma: no cover
 
 
 def plot_intent_confidences(intent_results, intent_hist_filename):
+    import matplotlib
+    matplotlib.use("agg")
     import matplotlib.pyplot as plt
     # create histogram of confidence distribution, save to file and display
     plt.gcf().clear()
@@ -247,6 +251,8 @@ def evaluate_intents(intent_results,
     Others are filtered out."""
     from sklearn.metrics import confusion_matrix
     from sklearn.utils.multiclass import unique_labels
+    import matplotlib
+    matplotlib.use("agg")
     import matplotlib.pyplot as plt
 
     # remove empty intent targets
@@ -262,7 +268,7 @@ def evaluate_intents(intent_results,
     # log and save misclassified samples to file for debugging
     errors = collect_nlu_errors(intent_results)
 
-    if errors:
+    if errors and errors_filename:
         save_nlu_errors(errors, errors_filename)
 
     cnf_matrix = confusion_matrix(targets, predictions)
