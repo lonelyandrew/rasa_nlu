@@ -3,8 +3,7 @@
 from typing import Dict, Any
 import logging
 
-from keras.layers import LSTM, Bidirectional, Dense, Embedding, Input,\
-    Masking
+from keras.layers import GRU, Bidirectional, Dense, Embedding, Input, Masking
 from keras.layers import Dropout
 from keras.models import Model
 from keras import optimizers
@@ -29,9 +28,10 @@ class Word2vecIntentClassifier(KerasBaseModel):
                                                     name='word_emb',
                                                     weights=[lookup_table],
                                                     mask_zero=True)
-        lstm_layer = LSTM(clf_config['hidden_size'], name='lstm')
-        self.bilstm = Bidirectional(lstm_layer, merge_mode='concat',
-                                    name='bilstm')
+        lstm_layer = GRU(clf_config['hidden_size'], name='lstm')
+        self.bilstm: Bidirectional = Bidirectional(lstm_layer,
+                                                   merge_mode='concat',
+                                                   name='bilstm')
         self.lstm_dropout: Dropout = Dropout(0.5)
         self.fc: Dense = Dense(nlabels, activation='softmax', name='fc')
 

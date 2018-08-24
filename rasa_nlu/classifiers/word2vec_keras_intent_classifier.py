@@ -9,11 +9,12 @@ import logging
 from typing import Any, Dict, Generator, List, Optional, Tuple
 from types import ModuleType
 from importlib import import_module
+import uuid
 
 import numpy as np
 from numpy import ndarray
 from keras.models import Model, load_model
-from keras.callbacks import EarlyStopping, Callback
+from keras.callbacks import EarlyStopping, Callback, ModelCheckpoint
 from keras.preprocessing.sequence import pad_sequences
 import progressbar
 from progressbar import widgets
@@ -121,6 +122,7 @@ class Word2vecKerasIntentClassifier(Component):
         self.clf_config: Dict[str, Any] = clf_config
         self.clf = clf
         self.labels = labels
+        self.uuid = str(uuid.uuid4())
 
     @classmethod
     def required_packages(cls) -> List[str]:
@@ -166,8 +168,14 @@ class Word2vecKerasIntentClassifier(Component):
         early_stopping_callback = EarlyStopping(
                 monitor='sparse_categorical_accuracy', min_delta=min_delta,
                 patience=patience)
+        self.checkpoint_file_name = f'{self.uuid}.h5'
+        self.checkpoint_path = os.path.join('/tmp/', self.checkpoint_file_name)
+        checkpoint_monitor = 'sparse_categorical_accuracy'
+        model_checkpoint = ModelCheckpoint(self.checkpoint_path,
+                                           monitor=checkpoint_monitor,
+                                           save_best_only=True)
         monitor = TrainingMonitor()
-        callbacks = [early_stopping_callback, monitor]
+        callbacks = [early_stopping_callback, monitor, model_checkpoint]
         self.clf.model.fit(X, y, batch_size=batch_size, verbose=0,
                            epochs=nepoch, callbacks=callbacks)
 
@@ -176,10 +184,6 @@ class Word2vecKerasIntentClassifier(Component):
         intent_confidence: float = 0.0
         if self.clf is not None and self.labels is not None:
             input_x: ndarray = np.array([message.get('token_ix_seq')])
-
-            # LOGGER.debug(message.text)
-            LOGGER.debug(input_x.shape)
-            LOGGER.debug('-'.join([t.text for t in message.get('tokens')]))
             pred = self.clf.model.predict(input_x)[0]
             intent_idx = pred.argmax()
             intent_name = self.labels[intent_idx]
@@ -208,7 +212,11 @@ class Word2vecKerasIntentClassifier(Component):
         with open(clf_config_file_path, 'w+') as f:
             json.dump(self.clf_config, f)
         clf_file_path: str = ''
-        if self.clf is not None:
+        if hasattr(self, 'checkpoint_path'):
+            clf_file_path = os.path.join(model_dir,
+                                         self.checkpoint_file_name)
+            os.rename(self.checkpoint_path, clf_file_path)
+        elif self.clf is not None:
             clf_file_path = os.path.join(model_dir, 'clf.h5')
             self.clf.model.save(clf_file_path)
         else:
