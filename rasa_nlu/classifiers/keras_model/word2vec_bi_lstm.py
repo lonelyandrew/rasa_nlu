@@ -8,13 +8,13 @@ from keras.layers import LSTM, Bidirectional, Dense, Embedding, Input,\
 from keras.layers import Dropout
 from keras.models import Model
 from keras import optimizers
+from keras.regularizers import l1_l2
 from tensorflow import Tensor
 from rasa_nlu.classifiers.keras_model.keras_base_model import KerasBaseModel
 from numpy import ndarray
 
 
 LOGGER = logging.getLogger(__name__)
-
 
 class Word2vecIntentClassifier(KerasBaseModel):
 
@@ -33,7 +33,10 @@ class Word2vecIntentClassifier(KerasBaseModel):
         self.bilstm = Bidirectional(lstm_layer, merge_mode='concat',
                                     name='bilstm')
         self.lstm_dropout: Dropout = Dropout(0.5)
-        self.fc: Dense = Dense(nlabels, activation='softmax', name='fc')
+        fc_regularizer = l1_l2(clf_config['fc_regularizer'])
+        self.fc: Dense = Dense(nlabels, activation='softmax', name='fc',
+                               bias_regularizer=fc_regularizer,
+                               kernel_regularizer=fc_regularizer)
 
     def compile(self):
         if self.model is None:

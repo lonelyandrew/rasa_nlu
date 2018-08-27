@@ -74,10 +74,10 @@ if __name__ == '__main__':
     logging_config()
     debug_mode = 'debug' if __debug__ else 'product'
     logger.info(f'MODE: {args.mode} ({debug_mode})')
-    training_data_path = '/home/shixiufeng/Data/corpus_intent/training_data.json'  # noqa
+    training_data_path = '/home/shixiufeng/Data/default/sentiment/training_data.json'  # noqa
     config_path = 'sample_configs/config_listen_robot.yml'
     save_dir = './projects/default/'
-    test_data_path = '/home/shixiufeng/Data/corpus_intent/test_intent.json'
+    test_data_path = '/home/shixiufeng/Data/default/sentiment/test_sentiment.json'
 
     if args.mode in ['train', 'parse']:
         model_dir = train(training_data_path, config_path, save_dir)

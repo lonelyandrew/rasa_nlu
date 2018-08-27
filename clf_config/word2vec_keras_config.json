@@ -2,10 +2,11 @@
   "clf_class": "rasa_nlu.classifiers.keras_model.word2vec_bi_gru.Word2vecIntentClassifier",
   "lr": 0.0003,
   "batch_size": 4,
-  "hidden_size": 150,
+  "hidden_size": 50,
   "loss": "sparse_categorical_crossentropy",
   "optimizer": "rmsprop",
   "threshold": 0.005,
+  "fc_regularizer": 0.003,
   "min_delta": 0.001,
   "patience": 10,
   "nepoch": 200
