@@ -4,7 +4,7 @@ from typing import Dict, Any
 import logging
 
 from keras.layers import LSTM, Bidirectional, Dense, Embedding, Input,\
-    Masking
+    Masking, GRU, SimpleRNN
 from keras.layers import Dropout
 from keras.models import Model
 from keras import optimizers
@@ -15,6 +15,7 @@ from numpy import ndarray
 
 
 LOGGER = logging.getLogger(__name__)
+
 
 class Word2vecIntentClassifier(KerasBaseModel):
 
@@ -29,10 +30,21 @@ class Word2vecIntentClassifier(KerasBaseModel):
                                                     name='word_emb',
                                                     weights=[lookup_table],
                                                     mask_zero=True)
-        lstm_layer = LSTM(clf_config['hidden_size'], name='lstm')
-        self.bilstm = Bidirectional(lstm_layer, merge_mode='concat',
+        self.embedding_dropout = Dropout(self.clf_config['input_dropout'])
+        rnn_regularizer = l1_l2(clf_config['rnn_regularizer'])
+        if clf_config['rnn_type'].lower() == 'lstm':
+            rnn_layer = LSTM(clf_config['hidden_size'], name='rnn',
+                             kernel_regularizer=rnn_regularizer,
+                             bias_regularizer=rnn_regularizer)
+        elif clf_config['rnn_type'].lower() == 'gru':
+            rnn_layer = GRU(clf_config['hidden_size'], name='rnn',
+                            kernel_regularizer=rnn_regularizer,
+                            bias_regularizer=rnn_regularizer)
+        else:
+            rnn_layer = SimpleRNN(clf_config['hidden_size'], name='rnn')
+        self.bi_rnn = Bidirectional(rnn_layer, merge_mode='concat',
                                     name='bilstm')
-        self.lstm_dropout: Dropout = Dropout(0.5)
+        self.lstm_dropout: Dropout = Dropout(clf_config['output_dropout'])
         fc_regularizer = l1_l2(clf_config['fc_regularizer'])
         self.fc: Dense = Dense(nlabels, activation='softmax', name='fc',
                                bias_regularizer=fc_regularizer,
@@ -42,8 +54,9 @@ class Word2vecIntentClassifier(KerasBaseModel):
         if self.model is None:
             token_input: Input = Input(shape=(None, ), dtype='int32')
             emb_out: Tensor = self.embedding_layer(token_input)
+            emb_out: Tensor = self.embedding_dropout(emb_out)
             mask_out: Tensor = Masking()(emb_out)
-            bi_lstm_out: Tensor = self.bilstm(mask_out)
+            bi_lstm_out: Tensor = self.bi_rnn(mask_out)
             dropout_out: Tensor = self.lstm_dropout(bi_lstm_out)
             fc_out: Tensor = self.fc(dropout_out)
             model = Model(token_input, fc_out)
