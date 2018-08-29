@@ -18,6 +18,7 @@ from keras.callbacks import EarlyStopping, Callback, ModelCheckpoint
 from keras.preprocessing.sequence import pad_sequences
 import progressbar
 from progressbar import widgets
+from tensorboardX import SummaryWriter
 
 from rasa_nlu.components import Component
 from rasa_nlu.config import RasaNLUModelConfig
@@ -37,6 +38,7 @@ class TrainingMonitor(Callback):
 
     def __init__(self, **kwargs):
         super(TrainingMonitor, self).__init__()
+        self.writer = SummaryWriter()
 
     @staticmethod
     def get_progressbar_widget_list(nepoch: int) -> BarWidgetsReturn:
@@ -100,6 +102,8 @@ class TrainingMonitor(Callback):
         LOGGER.info(f'\n{epoch_header}{epoch_loss_str} {epoch_acc_str}')
         self.history['loss'].append(epoch_loss)
         self.history['acc'].append(epoch_acc)
+        self.writer.add_scalar('loss', epoch_loss, epoch)
+        self.writer.add_scalar('acc', epoch_acc, epoch)
 
     def on_batch_begin(self, batch, logs):
         self.bar.update(batch)
